@@ -1,0 +1,13 @@
+/*
+Theme Name: Soramado
+Description: 地方の小さなお店向けの Web 集客の相談サービス（架空）の LP テーマ。親テーマを使わない単体のテーマ。見た目は assets/css/design.css、LP 以外のページは page.css。
+Version: 1.0.0
+Requires at least: 6.0
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: soramado
+*/
+
+/* このファイルはテーマの宣言だけ。WordPress がテーマを見分けるのに必要なので置いている。
+   スタイルは inc/style-script.php で design.css・form.css・page.css を読む。 */

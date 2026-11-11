@@ -1,0 +1,1148 @@
+/* ============================================================
+   design.css
+   ★ 模擬案件版。元の設計ファイルから結合したもの。
+     直接編集しない。直すときは原稿を直して _tools/実装を作る.command を実行する。
+   ============================================================ */
+:root{--ink:#0A171C;--ink-sub:#46595F;--brand-deep:#004052;--brand-cyan:#0891B2;--brand-vivid:#00C0EB;--brand-blue:#0E7BC4;--brand-blue-dk:#0B68A6;--white:#FFFFFF;--off-white:#F2FAFC;--border:#D6E7EC;--tint:#DFF3F9;--color-bg:var(--white);--color-bg-alt:var(--off-white);--color-heading:var(--ink);--color-text:var(--ink);--color-text-sub:var(--ink-sub);--color-accent:var(--brand-cyan);--color-accent-hi:var(--brand-vivid);--color-border:var(--border);--color-cta-bg:var(--brand-blue);--color-cta-bg-hv:var(--brand-blue-dk);--color-cta-text:var(--white);--color-panel-deep:var(--brand-deep);--font-jp:"Zen Kaku Gothic New",sans-serif;--font-en:"Inter",sans-serif}html{scroll-behavior:smooth;background:var(--brand-deep)}body{margin:0;background:var(--brand-deep);color:var(--color-text);font-family:var(--font-jp);letter-spacing:.04em;-webkit-font-smoothing:antialiased}h1,h2,h3{font-feature-settings:"palt" 1}a{color:var(--color-text);text-decoration:none}a:hover{color:var(--color-cta-bg-hv)}input,textarea{font-family:var(--font-jp)}.hero-panel{background:linear-gradient(100deg,rgba(255,255,255,.97) 0%,rgba(242,250,252,.93) 26%,rgba(223,243,249,.72) 48%,rgba(0,192,235,.1) 74%,transparent 90%)}@media (max-width:768px){.hero-panel{background:linear-gradient(180deg,rgba(255,255,255,.97) 0%,rgba(242,250,252,.93) 32%,rgba(223,243,249,.72) 56%,rgba(0,192,235,.1) 80%,transparent 94%)}}@keyframes lpFade{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}@keyframes lpRise{from{transform:translateY(105%)}to{transform:translateY(0)}}
+
+/* ============================================================
+   ここから下は実装側で足した分（原稿には無い）
+   原稿はPC前提で組まれているため、狭い画面で崩れるところだけ直している。
+   デザインの考え方は変えていない。
+   ============================================================ */
+/* ── メニュー（ハンバーガー） ─────────────────────────
+   PCでは、囲った div を「無かったこと」にして原稿どおりの横並びに戻す。
+   display:contents は「この箱は数えない。中身を親の子として扱う」という指定。 */
+[data-menu-panel]{ display:contents; }
+[data-menu-toggle]{ display:none; }
+
+@media (max-width: 767px){
+  /* ── ヘッダー（2026-08-05 作り直し） ───────────────────
+     白い帯をやめ、写真の上に浮かせる。スクロールして写真から離れたら白い帯に戻す
+     （そのままだと、白い本文の上で文字と線が混ざって読みにくい）。
+     切り替えは main.js が header に data-scrolled を付けて知らせる。 */
+  header{
+    align-items:center !important;
+    background:transparent !important;
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+    padding:10px 24px !important;      /* 左右24px。ロゴもボタンも画面端から同じ距離 */
+    border:0 !important; box-shadow:none !important;
+  }
+  header > a{ padding:0 !important; }
+  /* ★ 2026-08-07：箱を詰めたぶん、数字を下げる（44 → 30）。絵の大きさは変わらない */
+  header > a > img{ height:30px !important; }
+
+  /* ★ 濃い面の上へ来たら、ロゴとボタンの色を入れ替える。
+       白い帯を出さずに読めるようにする唯一の方法。
+       白で固定すると、写真の明るいところと白い本文の上で消える（実際に消える）。
+       いま暗い面の上かどうかは main.js が data-on-dark で知らせる。 */
+  header > a > img,
+  [data-menu-toggle]{ transition:filter .25s linear, background-color .25s linear; }
+  header[data-on-dark="true"] > a > img{ filter:brightness(0) invert(1); }
+  header[data-on-dark="true"] [data-menu-toggle] rect{
+    fill:#FFFFFF;
+    filter:drop-shadow(0 1px 5px rgba(3,26,33,.45));
+  }
+
+  /* ファーストビューを過ぎたらロゴを引っ込める（重なり対策・上のJSの説明を参照） */
+  header > a{ transition:opacity .22s linear; }
+  header[data-past-fv="true"] > a{ opacity:0; pointer-events:none; }
+  header > a > span{ display:none !important; }        /* CONSULTING FOR LOCAL SHOPS */
+  /* ★ ナビを右へ寄せる。寄せないと「お問い合わせ」が真ん中に浮いて、
+        ボタンとの間に白い隙間ができる（space-between が3つを均等に散らすため） */
+  header nav{ gap:0 !important; padding-left:0 !important; flex-wrap:nowrap !important;
+              align-items:stretch !important; margin-left:auto !important; }
+  /* ── スマホのヘッダーは「ロゴ」と「ボタン」だけ（2026-08-05 指示） ──────
+     白い帯も「お問い合わせ」の色面も置かない。写真の上に2つだけ浮かせる。
+     ★ 「お問い合わせ」は消していない。**メニューの中のいちばん下へ移した。**
+       消すと相談への入口が無くなるので、場所を変えて残す。 */
+  header nav > a:last-child > span:last-child{ display:inline !important; }
+
+  /* ボタンは線だけ（2026-08-05 指示）。丸い枠は置かない。
+     枠を外すと下の写真と混ざるので、**線を太くして**自分で存在感を持たせる。
+     押せる範囲は見た目より広く取る（指で押す面は56px角を確保する）。 */
+  [data-menu-toggle]{
+    display:flex !important; align-items:center; justify-content:flex-end;
+    width:56px !important; height:56px !important;
+    align-self:center !important; margin-left:10px !important;
+    padding:0 !important; border:0 !important; cursor:pointer;
+    border-radius:0 !important;
+    background:none !important;
+    box-shadow:none !important;
+    -webkit-tap-highlight-color:transparent;
+  }
+  [data-menu-toggle] svg{ display:block; overflow:visible; width:30px; height:19px; }
+  [data-menu-toggle] rect{
+    fill:#0A171C;
+    /* 写真の明るさはまちまち。うっすら影を敷いて、どこでも輪郭が立つようにする */
+    filter:drop-shadow(0 1px 5px rgba(255,255,255,.55));
+    /* transform-box:fill-box ＝「この図形自身の枠」を基準に回す。
+       付けないとSVG全体の原点で回ってしまい、線がどこかへ飛んでいく。 */
+    transform-box:fill-box; transform-origin:center;
+    transition:transform .3s cubic-bezier(.22,.61,.36,1), opacity .18s linear;
+  }
+  /* 開いたら × にする。上下の線を真ん中へ寄せて交差させ、真ん中の線は消す。
+     7.5px ＝ 線の間隔。上の線の中心(1.5)を真ん中の線の中心(9.0)へ動かす量 */
+  header[data-menu-open="true"] [data-menu-toggle] rect[data-l="1"]{
+    transform:translateY(7.5px) rotate(45deg);
+  }
+  header[data-menu-open="true"] [data-menu-toggle] rect[data-l="2"]{
+    opacity:0; transform:scaleX(.15);
+  }
+  header[data-menu-open="true"] [data-menu-toggle] rect[data-l="3"]{
+    transform:translateY(-7.5px) rotate(-45deg);
+  }
+
+  /* ── メニューのパネル ────────────────────────────
+     スマホでは nav そのものをパネルにする。囲いは PC と同じく「無かったこと」にするので、
+     6項目（実績〜お問い合わせ）が1列に並ぶ。 */
+  [data-menu-panel]{ display:contents !important; }
+  header nav{
+    position:absolute; left:0; right:0; top:100%;
+    flex-direction:column !important; align-items:stretch !important;
+    gap:0 !important; padding:0 !important; margin:0 !important;
+    /* 半透明にしない。下の写真や文字が透けて、メニューと重なって読めなくなる */
+    background:#FFFFFF;
+    border-bottom:1px solid var(--color-border);
+    box-shadow:0 12px 28px rgba(10,23,28,.10);
+    max-height:0; overflow:hidden; visibility:hidden;
+    transition:max-height .3s cubic-bezier(.22,.61,.36,1), visibility 0s .3s;
+  }
+  header[data-menu-open="true"] nav{
+    max-height:min(80vh, 600px); visibility:visible; overflow-y:auto;
+    transition:max-height .34s cubic-bezier(.22,.61,.36,1), visibility 0s;
+  }
+  /* 項目は1行ずつ。和文を左、英字を右に置いて、目が縦に流れるようにする。
+     ★ 「>」ではなく空白（子孫）で書くこと。前5項目の親は囲いの div のままで、
+       display:contents は**見た目の並びを変えるだけでCSSの親子関係は変えない。**
+       「>」で書くと、直下にいる「お問い合わせ」だけに当たって、他が縦積みのまま残る。 */
+  header nav a{
+    flex-direction:row !important; align-items:center !important;
+    justify-content:space-between !important;
+    padding:17px clamp(18px,5vw,26px) !important;
+    border-top:1px solid var(--color-border);
+    min-height:0 !important; min-width:0 !important;
+  }
+  header nav a > span:first-child{ font-size:15px !important; }
+  header nav a > span:last-child{ font-size:10px !important; letter-spacing:.18em !important; }
+  /* いちばん下は「お問い合わせ」。色面のまま置いて、行き先が分かるようにする */
+  header nav > a:last-child{ padding-block:20px !important; }
+
+  /* 左右の縦組み英字は消す。狭い画面では本文の邪魔にしかならない */
+  section#top > div:has(> span[style*="writing-mode"]){ display:none !important; }
+
+  /* ══════════════════════════════════════════════════════
+     スマホのファーストビュー（2026-08-05 全面作り直し）
+
+     考え方
+       ・写真を画面いっぱい（100svh）に敷き、UIはすべてその上に重ねる
+       ・1画面目に置くのは「写真・小さな白いラベル・大きな見出し・スクロール」だけ。
+         本文もボタンもタグも、1画面目には入れない（情報を並べる画面にしない）
+       ・見出しは中央に置かない。左下に寄せ、画面幅を使い切る
+       ・白い面は敷かない。写真の下を沈めて（影）、白い文字を読ませる
+
+     ここまでの失敗から持ち越している前提
+       ・横長の写真は縦長の画面に入らない。スマホ用の縦切り抜きを使う（③を参照）
+       ・.hero-panel の % は「セクションの高さ」基準。写真の高さとは一致しない
+         → 高さを 100svh に固定して、写真と同じ範囲だけを覆う
+
+     動きについて
+       外部ライブラリ（GSAP）は使わない。この案件は「子テーマ化のとき面倒になる」
+       という理由で外部ライブラリを禁じている。イージングは同じものをCSSで書く。
+         Power3.out ≒ cubic-bezier(.215,.61,.355,1)
+         Power4.out ≒ cubic-bezier(.165,.84,.44,1)
+         sine.inOut ≒ ease-in-out
+     ══════════════════════════════════════════════════════ */
+
+  /* 1. 器：画面いっぱい。上下の余白は持たせない */
+  section#top{
+    min-height:100svh !important;
+    align-items:flex-start !important;
+    padding:0 !important;
+    background:#FFFFFF !important;
+  }
+
+  /* 2. 写真：画面いっぱい。
+        ★ 2026-08-07：ここの heroZoom も外した。引きは .fv-slide 側が持っている。 */
+  section#top > div:first-of-type{
+    inset:0 0 auto 0 !important; width:100% !important;
+    height:100svh !important;
+    -webkit-mask-image:none !important; mask-image:none !important;
+    transform: translateZ(0);
+  }
+  /* ★ 「section#top [data-parallax]」と書くと、**多角形にも当たる**（多角形も
+        スクロールで動かすために data-parallax を持っているため）。
+        実際に当たって、多角形が画面の上へ飛び、写真まで敷かれた。
+        写真の層だけに絞ること。 */
+  .fv-stack{
+    inset:-6% 0 !important;
+  }
+  /* ★ スマホで敷く写真そのもの（縦切り抜き版）は、下の「FVの3枚」で1枚ずつ指定する。 */
+
+  /* 3. 沈み：白い面を敷くのではなく、写真の下を暗く沈める。
+        面を足すと写真が小さく見える。影なら写真のままで文字が乗る */
+  .hero-panel{
+    inset:0 auto auto 0 !important;
+    width:100% !important; height:100svh !important;
+    background:linear-gradient(180deg,
+      rgba(3,26,33,0)     0%,
+      rgba(3,26,33,.10)  38%,
+      rgba(3,26,33,.40)  62%,
+      rgba(3,26,33,.58)  86%,
+      rgba(3,26,33,.68) 100%) !important;
+  }
+
+  /* 4. 多角形：写真の上にゆっくり浮かぶ。写真を邪魔しない濃さに留める。
+        外側＝スクロールで動く／内側＝浮遊。役割を分けている（HTML側の注記を参照） */
+  .hero-poly{
+    /* 顔にかからない位置に置く。人物の上に色を乗せると、写真の役目（親しみ）を殺す */
+    position:absolute; left:-14%; top:47svh;
+    width:100%; height:40svh; z-index:0;
+    pointer-events:none; will-change:transform;
+  }
+  /* ★ 多角形の見た目（形・色・濃さ）と浮遊は、下の「FVの3枚と多角形」にまとめた。
+       ここに置いていた @keyframes は、**@media の中にあると別の画面幅で登録されず**、
+       PCで形だけ出て止まる、という壊れ方をする。外へ出した（2026-08-07）。 */
+
+  /* 5. 文字の置き場：見出しまでを1画面目の下端に置き、続きは画面の外へ送る。
+        316px ＝ ラベルの箱＋見出し2行＋下の余白の実測値 */
+  section#top > div[style*="z-index:2"]{
+    padding:calc(100svh - 300px) 24px 0 !important;
+    max-width:none !important;
+  }
+  section#top > div[style*="z-index:2"] > div{
+    max-width:none !important; width:100% !important;
+    gap:14px !important;
+  }
+
+  /* 6. ラベル：箱に入れない（2026-08-05 指示）。
+        白い箱で囲うと、写真の上に別のカードが乗ったように見えて古びる。
+        **見出しと同じ組み**にして、大きさの差だけで主従を付ける。
+        色は白。丸だけ明るい水色を残して、視線の入口にする。 */
+  [data-hero-label]{
+    align-self:flex-start !important;
+    gap:6px 12px !important;
+    padding:0 !important;
+    background:none !important;
+    box-shadow:none !important;
+    border-radius:0 !important;
+  }
+  [data-hero-label] span{
+    font-family:var(--font-jp) !important;
+    font-size:16px !important; font-weight:600 !important;
+    letter-spacing:.02em !important;
+    color:#FFFFFF !important;
+  }
+  /* 丸は明るい水色。区切りの縦線は写真の上では雑音になるので消す */
+  [data-hero-label] > span:first-child{ background:#7FD6E6 !important; width:7px !important; height:7px !important; }
+  [data-hero-label] > span:nth-child(3){ display:none !important; }
+
+  /* 7. 見出し：画面幅を使い切る大きさ。中央に置かない。
+        窓（overflow:hidden）の中で、文字が下から現れる */
+  [data-hero-title]{
+    font:700 clamp(54px,19vw,88px)/0.9 var(--font-jp) !important;
+    letter-spacing:-.05em !important;
+    color:#FFFFFF !important;
+    margin-left:-.03em !important;
+  }
+
+  /* 8. 見出しの次から下は、白い面の上に置く（1画面目には入らない） */
+  section#top > div[style*="z-index:2"] > div > div:nth-of-type(2){
+    /* ★ 本文は必ず1画面目の外から始める。
+          svh で指定すると画面の高さによって足りなくなり、写真の下端に食い込む
+          （実際に食い込んだ）。積み上げの誤差を吸収できる固定値にする。 */
+    margin-top:150px !important;
+  }
+
+  /* 9. スクロール：右下・小さく・控えめ */
+  section#top > div:last-of-type{
+    position:absolute !important;
+    left:auto !important; right:24px !important;
+    /* セクションは1画面より長いので bottom で置くと画面外へ行く（実際に行った）。
+       1画面目の下端から測る */
+    top:calc(100svh - 78px) !important; bottom:auto !important;
+    width:auto !important; padding-left:0 !important;
+    flex-direction:column !important; align-items:center !important;
+    gap:8px !important; z-index:4 !important; opacity:.7 !important;
+  }
+  section#top > div:last-of-type > span:first-child{ color:#FFFFFF !important; }
+  section#top > div:last-of-type > span:last-child{
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,0)) !important;
+  }
+
+  /* 10. 「動きを減らす」設定のときは、隠したままにしない。
+         下の共通指定で animation が止まるので、ここで見える状態に戻す */
+
+
+  /* 説明文が画面外へ流れ出す。keep-all では375pxで折り返せないので、文節（auto-phrase）で折る */
+  section#top p[style*="keep-all"]{
+    max-width:none !important; word-break:auto-phrase !important;
+    line-break:auto !important; overflow-wrap:anywhere !important;
+  }
+  section#top a[href^="tel:"]{ white-space:nowrap !important; font-size:15px !important; }
+}
+
+
+/* ============================================================
+   2026-08-05 の指示による調整（ここだけ原稿から変えている）
+   レイアウト・配色・書体の考え方は変えていない。指定された箇所のみ。
+   ============================================================ */
+
+/* ① SCROLL の線が横向きで、下へ促す合図に見えない。
+      縦の線に変え、下端で細くする（「下に続く」と読める向きにする）。 */
+section#top > p:last-of-type > span:last-child,
+section#top > div:last-of-type > span:last-child{
+  width: 1px !important;
+  height: clamp(32px, 6vh, 64px) !important;
+  background: linear-gradient(180deg, var(--ink-sub), rgba(70,89,95,0)) !important;
+}
+section#top > div:last-of-type{ align-items: flex-start !important; }
+
+/* ② ヘッダーのロゴと、その横の英字をもっと大きく */
+/* ★ 2026-08-07：SVGの箱を中身に詰めた（③を参照）ので、**数字の意味が変わった。**
+      それまでは箱の高さの27%しか絵が無く、90px でも絵は24px相当だった。
+      いまは指定した高さの約9割が絵になる。同じ 90px にすると絵が80pxになり、
+      高さ102pxのヘッダーからはみ出す。
+      → 絵の高さで 34px 前後を狙って 38px にする。
+      **ここの数字を触る前に、SVGの箱が詰まっているかを必ず確認すること。** */
+header > a > img{ height: clamp(30px, 2.8vw, 38px) !important; }
+header > a > span{ font-size: 10px !important; letter-spacing: .2em !important; }
+
+/* ②-2 「お問い合わせ」の色面がヘッダーの下まで届かず、下に白い帯が見える。
+        ナビの行を親の高さいっぱいに伸ばし、項目も上下いっぱいにする。 */
+header{ align-items: stretch !important; }
+header nav{ align-items: stretch !important; align-content: stretch !important; }
+header nav > a{ align-self: stretch !important; }
+
+/* ②-3 ロゴを大きくしたぶんヘッダーの背が高くなり、ナビ文字の下に空きが出る。
+        ロゴまわりの上下の詰めを減らして、高さをロゴの大きさだけで決める。 */
+header > a{ padding-top: 6px !important; padding-bottom: 6px !important; }
+
+/* ②-4 ヘッダーの下端に引かれている細い線が、青い「お問い合わせ」の下だけ
+        明るい帯に見えて浮く。線を消す（下は写真なので、境目は線が無くても分かる）。 */
+header{ border-bottom: 0 !important; }
+
+/* ③ ヘッダーの下に白い帯が見える。
+      原因は2つ。
+        (1) 写真の層がヘッダーの高さぶん足りていない
+        (2) スクロールすると視差効果で写真が下へ動き、上端に隙間ができる
+      (1) は層を上へ伸ばして、(2) は「動ける余裕」を広げて塞ぐ。
+      原稿の余裕は 8%。動く量に対して足りないので 22% にする。
+      はみ出しは section の overflow:hidden で隠れるので、見え方は変わらない。 */
+/* ★ top をずらすと写真の見える範囲まで動いて顔が切れる。
+      ずらさず、「動ける余裕」だけを広げて隙間を塞ぐ。
+
+   ★★ 2026-08-07：22% → 14% → **5%** まで減らした。
+      「はみ出しは隠れるので見え方は変わらない」と書いていたが**誤り。**
+
+      ここが写真の寄り具合を決めている。仕組みはこう。
+        ・写真は cover で敷くので、**層の高さいっぱいまで拡大される**
+        ・実際に見えているのは section の高さぶんだけ
+        → 層を高くするほど、拡大率が上がり、見える範囲が狭くなる
+
+      実測（画面 1440×900・写真 1672×941）
+        余裕22% … 拡大1.38倍／写真の横56%・縦78%しか見えない（寄りすぎ）
+        余裕14% … 拡大1.11倍／横56%・縦78%
+        余裕 5% … 拡大0.94倍／**横66%・縦100%**（顔も手も入る）
+
+      横長の写真を縦長の枠に入れている以上、横は必ず切れる。
+      **縦を100%見せられる 5% が、いまの枠でいちばん引ける限界。**
+
+   ★ 余裕と「動かす量」は必ずセットで決める。
+      ScrollTrigger で動かす量が余裕を超えると、上端に白い帯が出る。
+      いまは余裕5%（上下それぞれ約40px）に対し、動かす量は3%（約26px）。
+
+   ★★ 2026-08-07（3回目の見直し）：**5% → 2% まで減らした。**
+      経緯：22% → 14% → 5% → 2%。減らすたびに写真が引けていく。
+
+      左右の -3% も 0 に戻した。あれはマウス追従で横に動かすために取った余裕で、
+      **マウス追従そのものをやめた**ので不要になった（main.js の 11. を参照）。
+
+      「もっと引きたい」と「動かしたい」は、この構造では両立しない。
+        ・写真は cover で層の高さいっぱいまで拡大されて敷かれる
+        ・層を大きくするほど拡大率が上がり、見える範囲が狭くなる
+        ・動かすには層を大きくして「はみ出し」を作るしかない
+      → **動かす量を削るぶんだけ、引ける。**引きを優先した。
+
+      いまの数値：余裕 上下2%（約16px）／スクロールで動かす量 1.2%（約10px）。
+      これ以上引きたい場合、**この枠の中ではもう手がない。**写真そのものを引きで作り直す。 */
+.fv-stack{ inset: -2% 0 !important; }
+
+/* ⑥ 人物の顔が切れる。
+      ★ 高さを増やす直し方は効かない。原稿は min(820px, 100vh) で、
+        画面が低いと 100vh 側が勝つため、画面の高さ以上には広がらない。
+      → 写真の「見る位置」を上げて、どの画面の高さでも顔が入るようにする。
+        原稿は 84% 42%。顔は上寄りにあるので、縦を 42% → 26% に上げる。
+   ★ 2026-08-07：FVが3枚になったので、見る位置は**1枚ずつ**指定するようになった。
+      値は build_impl.py 冒頭の FV_POS。ここには書かない（2箇所に散らさない）。 */
+
+/* ④ 帯の文字が右端の角丸に重なる。内側に余白を足して逃がす。 */
+section:has(> p) > p[style*="font:"]{ }
+
+/* ⑥-5 サービスの写真を、画面の端まで届かせる（2026-08-08 指示）。
+        原稿にも左右交互の負のマージンは入っているが、**外側の器（最大1280px）の
+        内側で止まっている。**画面が広いほど端との隙間が開く。
+          1440px … 22px 手前で止まる ／ 1920px … 260px 手前
+        → 器から外へ出た分だけ引く。1280px以下では、いまと同じ量だけはみ出す。
+        ★ 突き抜けさせない。端で切る。ShareDan のように背景ごと埋めると、
+          決めてある白の面積比（白80%以上）が崩れる。採るのはリズムだけ。
+        ★ 100vw はスクロールバーを含むので数pxだけ余分に出るが、
+          いちばん外側の器が overflow-x:hidden を持っているので横スクロールは出ない。 */
+@media (min-width: 768px){
+  .sec-photo--right{
+    margin-right: calc(-1 * max(clamp(20px,4vw,60px), (100vw - 1280px) / 2)) !important;
+  }
+  .sec-photo--left{
+    margin-left:  calc(-1 * max(clamp(20px,4vw,60px), (100vw - 1280px) / 2)) !important;
+  }
+}
+
+/* ⑥-4 幅ごとの改行（2026-08-08 → 2026-08-09 作り直し）。
+        見出しは幅によって器の大きさが大きく変わる。
+          375px … h2 36px・器335px → **1行9文字**
+          767px … h2 44px・器706px → 1行16文字
+          1440px… h2 46px・器1160px → 1行25文字
+        1つの <br> の位置で全部をまかなうことはできない。
+        → 幅ごとに効く <br> を用意し、CSSで出し分ける。
+
+   ★★ **class は <br> そのものに付ける。<span> で包まない。**
+      2026-08-08 は `<span class="br-sp"><br></span>` にしていたが、
+      **640px以上のスマホ幅で改行が効かなくなっていた**（実測で発覚）。
+      原因は main.js の見出し演出。`SplitType(h,{types:"lines"})` が
+      見出しを行ごとに割るとき、**中の <span> に display:inline-block を書き込む。**
+      inline-block の箱の中に入った <br> は、箱の中でしか改行しない
+      ＝**外側の行には何の影響も与えない。**
+      裸の <br> なら SplitType は行の区切りとして扱う（main.js のコメント参照）。
+
+   ★ 効かせない側は display:none。<br> は none にすると改行そのものが消える。
+
+   ★★ **本命は CSS ではなく main.js の pruneResponsiveBreaks()。**
+      display:none にしても <br> は DOM に残り、SplitType がそれを語の区切りとして数え、
+      語と語を半角空白でつなぐ。結果 PC で「地図検索も、␣SNSも、」と
+      **見出しの真ん中が空く。**そこで JS 側で、効かない <br> は SplitType の前に
+      DOM から取り除いている（取り除いたあと normalize() も必須。詳細は main.js）。
+      ここの CSS は **JSが動かない環境のための保険。** */
+br.br-pc, br.br-tb, br.br-sp{ display:none; }
+@media (min-width: 1024px){ br.br-pc{ display:inline; } }
+@media (min-width: 768px) and (max-width: 1023px){ br.br-tb{ display:inline; } }
+@media (max-width: 767px){ br.br-sp{ display:inline; } }
+
+/* ⑥-3 サービス末尾のCTA（2026-08-07 差し替え）。
+        ここは**ボタンにしない。**同じ形の箱が2回出ると、最後のCONTACTが最後に見えなくなる。
+        文字と矢印だけで置き、色はホバーのときだけシアンに寄せる。
+        文言も差し替えた（旧「まず話すだけでも構いません。」）。CONTACTの見出しが
+        「まず話すだけ、で構いません」なので、ほぼ同じ文が2回出ていた。
+        ★ 面（--brand-blue）は使わない。ここで面を張ると最終CTAとの強弱が消える。
+        ★ 電話番号も置かない。FVとCONTACTの2箇所で足りる。 */
+a[data-cta-text]{ transition: color .25s ease; }
+a[data-cta-text] > span{ transition: transform .25s ease, color .25s ease; }
+a[data-cta-text]:hover{ color: var(--brand-cyan) !important; }
+a[data-cta-text]:hover > span{ transform: translateX(5px); }
+
+/* ⑥-2 つなぎの帯（「運営してきたから、課題が分かる」「まず、現状をうかがいます」）の
+        縦幅が足りず、写真が窮屈で人物が切れる。
+        原稿は 240〜400px。1.6倍に広げて、写真が息をする高さにする。 */
+section > div[style*="border-radius:0 clamp"],
+section > div[style*="border-radius:clamp"]{
+  height: clamp(400px, 52vw, 640px) !important;
+}
+
+/* ⑤-2 帯の下側の角丸が、次の濃い面に白く食い込んで見える。
+       帯は上下のセクションに挟まれているので、下側の角だけ角丸を外す。
+       （上側の角丸は残す。見た目の性格は変えない） */
+section[style*="border-radius"]{
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* ⑤ 帯の見出しが右端の角丸に重なる。右の余白を広げる
+      ※ ⑦で帯の中の見出しを外したため、いまは当たる要素が無い。
+        帯の中に文字を戻すときのために残してある。 */
+section[style*="border-radius"] p[style*="clamp"]{
+  padding-right: clamp(2.5rem, 8vw, 7rem) !important;
+}
+
+/* ⑨ ファーストビューの入り（2026-08-05：スマホで作った動きをPCにも入れる）
+   PCの組み方（左に文字・右に写真）は変えない。**入りの動きと見出しの組みだけ**を寄せる。
+     ・写真は寄りから引きへ（1.08 → 1.00）
+     ・見出しは窓の中で下から現れる（行ごとに少しずらす）
+   イージングは外部ライブラリを使わずにCSSで書いている。
+     Power3.out ≒ cubic-bezier(.215,.61,.355,1)
+     Power4.out ≒ cubic-bezier(.165,.84,.44,1)
+   ★ keyframes は @media の中に置かない。中に書くと、その条件のときしか登録されず、
+     別の画面幅で「動かない」ではなく「最初の姿のまま止まる」という壊れ方をする。 */
+@keyframes heroZoom{ from{ transform:scale(1.08); } to{ transform:scale(1); } }
+@keyframes heroLine{ to{ transform:translateY(0); } }
+
+[data-hero-title] br{ display:none; }
+[data-hero-title] > span{
+  display:block; overflow:hidden;
+  padding-bottom:.09em; margin-bottom:-.09em;   /* 「年」の下が窓で切れるのを防ぐ */
+}
+[data-hero-title] > span > span{
+  display:block; transform:translateY(106%);
+  animation:heroLine 1.15s cubic-bezier(.165,.84,.44,1) .30s forwards;
+}
+[data-hero-title] > span:nth-of-type(2) > span{ animation-delay:.44s; }
+
+/* PCの見出し：大きさと詰めだけスマホ寄りにする。
+   直す前は 64px / 行間1.45 / 字間-.01em で、文章の見出しに見えていた。
+   行間を詰めて字間を締めると、**同じ文字でも「面」として立つ。** */
+@media (min-width: 768px){
+  [data-hero-title]{
+    font-size:clamp(46px, 6.6vw, 92px) !important;
+    line-height:1.06 !important;
+    letter-spacing:-.035em !important;
+  }
+  /* ★ 2026-08-07：ここにあった heroZoom（枠ごと 1.08→1.00 に引く）を外した。
+     FVが3枚になり、**写真1枚ずつが GSAP で 1.08→1.00 に引く**ようになったため、
+     同じ拡大が二重に走っていた。しかもこの枠には大きなマスクが掛かっていて、
+     拡大するたびにマスクを画面いっぱいに掛け直すことになる。
+     **これがカクつきの主因。**引きは内側（.fv-slide）だけに任せる。 */
+  section#top > div:first-of-type{
+    /* 動く中身を抱えている枠なので、独立した層として扱わせる。
+       層に分けておけば、中で拡大が起きてもマスクを掛け直さずに済む */
+    transform: translateZ(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  [data-hero-title] > span > span{ transform:none !important; }
+  section#top > div:first-of-type{ animation:none !important; transform:none !important; }
+}
+
+/* ⑦ つなぎの帯：写真の中だけを英字がゆっくり横に流れる（2026-08-05 指示）
+
+   なぜ写真の中だけで済むのか
+     帯の親（写真を入れている div）に overflow:hidden と角丸が既に付いている。
+     その中に inset:0 で重ねるだけで、**角丸の形どおりに文字が切られる。**
+     画像そのものに焼き込む必要はないし、別のマスクも要らない。
+
+   継ぎ目を出さない考え方
+     同じ文を4つ並べ、半分（＝2文ぶん）進んだところで先頭へ戻す。
+     2文ぶんの幅が画面幅より広ければ、戻った瞬間は同じ絵なので切れ目が見えない。
+     文が短い帯2でも、いちばん小さい 56px で 2文 ≒ 1700px あるので足りる。
+
+   動きの役割（この案件では、役割を説明できない動きは入れない）
+     止まっている写真に、ゆっくりした一定の速度を1つだけ足して「奥行き」を作る。
+     読ませる文字ではないので aria-hidden。読み上げは移した日本語の見出しが担う。
+     ※「動きを減らす」設定の人には、下の prefers-reduced-motion で止まる。 */
+.band-marquee{
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  /* ★ 溶かすのは「出てくる側」だけ（2026-08-05 指示）
+     溶かさないと、文字が枠の縁で真っ二つに切られる。
+     ただし**消えていく側は溶かさない。**両端を溶かすと真ん中しか読めず、
+     文字が出た瞬間から薄れ始めるので、かえって落ち着かない。
+
+     どちらが「出てくる側」か
+       既定の帯：中身が左へ動く → 文字は**右から現れて左へ抜ける** → 右を溶かす
+       反転の帯：中身が右へ動く → 文字は**左から現れて右へ抜ける** → 左を溶かす */
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 84%, rgba(0,0,0,0) 100%);
+          mask-image: linear-gradient(90deg, #000 0%, #000 84%, rgba(0,0,0,0) 100%);
+}
+.band-marquee--reverse{
+  -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, #000 16%, #000 100%);
+          mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, #000 16%, #000 100%);
+}
+.band-marquee__track{
+  display: flex; width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+  animation: band-marquee 48s linear infinite;
+}
+.band-marquee__track > span{
+  flex: 0 0 auto;
+  /* ★ 700・800 にしない。Inter は 600 までしか読み込んでいない（偽物の太字になる） */
+  font: 600 clamp(56px, 10vw, 150px)/0.95 'Inter', sans-serif;
+  letter-spacing: -.02em;
+  color: rgba(255,255,255,.92);
+  padding-right: clamp(40px, 6vw, 110px);
+}
+/* 帯2は帯1と左右の向きが逆（写真も角丸も反転している）ので、流れる向きも逆にする。
+   同じ向きに戻したいときは、この2行を消すだけでよい。 */
+.band-marquee--reverse .band-marquee__track{
+  animation-direction: reverse;
+  animation-duration: 26s;   /* 文が短いぶん、1周が短い */
+}
+@keyframes band-marquee{
+  from{ transform: translateX(0); }
+  to  { transform: translateX(-50%); }
+}
+
+/* ── フッター上のロゴ帯（ここだけ原稿から変えている） ─────────
+   原稿は「白い面をロゴの形で mask でくり抜く」方式。
+   ところが **このロゴSVGは CSS の mask-image として使えない**（file:// でも data: でも出ない）。
+   ダブルクリックで開くとロゴ帯が空になり、せり上がりも見えない。
+   mask をやめて背景画像で同じ絵を出し、filter で白く塗る。**見た目は原稿と同じ。**
+   ★ 触っているのはこの帯だけ。レイアウト・余白・色・書体は変えていない。 */
+[data-logo-slice]{
+  background-color: transparent !important;
+  -webkit-mask-image: none !important;
+          mask-image: none !important;
+  background-image: url("../img/soramado_logo_white.svg") !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center bottom !important;
+  filter: brightness(0) invert(1);
+}
+
+/* ⑧ スマホでの詰め（2026-08-05 指示）
+   ★ この塊は「2026-08-05 の指示による調整」より後ろに置くこと。
+     前に置くと ⑥-2（帯の高さ640px）に上書きされて効かない。 */
+@media (max-width: 767px){
+
+  /* ── 見出しと本文の差（ジャンプ率）2026-08-05 指示 ──────────────
+     直す前：スマホでは見出し26px・本文15px で **1.7倍しかなかった。**
+     この差だと、どこが見出しでどこが本文か目が拾えず、
+     全部同じ大きさの文字が並んでいるように見える（＝古いページの見え方）。
+     ファーストビューは 71px 対 16px（4.4倍）で効いているので、
+     **下のセクションも同じ考え方でそろえる。**
+
+     組んだ階段（375px幅のとき）
+       セクション見出し h2  38px  ── 2.5倍 ──┐
+       小見出し        h3  24px             │ 本文 15px
+       リード              17px             │
+       ラベル・英字        13px 以下 ────────┘
+     大きくするのは見出しだけ。本文は読みやすさが最優先なので触らない。 */
+  section h2{
+    font-size:clamp(32px, 9.6vw, 44px) !important;
+    line-height:1.3 !important;
+    letter-spacing:-.02em !important;
+  }
+  section h3{
+    font-size:clamp(20px, 5.6vw, 26px) !important;
+    line-height:1.45 !important;
+    letter-spacing:-.01em !important;
+  }
+
+  /* ── つなぎの帯（2026-08-05 作り直し） ─────────────────
+     直す前：左右に余白を取った角丸のカードで、上に濃い色の膜が一様にかかっていた。
+     これだと**写真ではなく「加工した画像」**に見え、安く見える。
+     さらに英字が人物の顔の上を真横に横切っていた。
+
+     直し方は3つ。
+       ① カードをやめて端まで届かせる（余白と角丸を外す）
+          写真は縁が切れているほうが強い。箱に入れると弱くなる
+       ② 色の膜を薄くし、下だけ沈める
+          一様にかけると絵の具に見える。下だけ沈めれば写真のまま文字が乗る
+       ③ 英字を下へ寄せる。人物の顔を横切らせない */
+  section > div[style*="border-radius:0 clamp"],
+  section > div[style*="border-radius:clamp"]{
+    height: 280px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 0 !important;
+  }
+  section > div[style*="border-radius"] > div[style*="rgba(9,110,133"]{
+    background:linear-gradient(180deg,
+      rgba(3,26,33,.06)   0%,
+      rgba(3,26,33,.10)  38%,
+      rgba(3,26,33,.46)  72%,
+      rgba(3,26,33,.72) 100%) !important;
+  }
+  .band-marquee{
+    align-items:flex-end !important;
+    padding-bottom:18px !important;
+  }
+  .band-marquee__track > span{
+    font-size: 30px !important;
+    padding-right: 22px !important;
+  }
+
+  /* 濃い色の面の下に敷いている写真は、スマホでは小さい版に差し替える。
+     上に不透明度9割の色面が乗るので、質感さえ残れば分からない。835KB → 約1/6。 */
+  div[style*="27452693"]{
+    background-image: url("../img/27452693-sp.webp") !important;
+  }
+}
+
+/* 「動きを減らす」設定の人には全部止める。好みではなく、酔い・発作の原因になるため必須 */
+@media (prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition:none !important; }
+  [data-parallax]{ transform:none !important; }
+  [data-reveal]{ opacity:1 !important; }
+  [data-logo-slice]{ transform:none !important; }
+  .fv-slide{ opacity:0 !important; transform:none !important; }
+  .fv-slide[data-fv="1"]{ opacity:1 !important; }
+  .hero-poly__shape{ transform:none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   01 RECORD / 02 COMMUNITY の改修
+     2026-08-10  375px版として実装
+     2026-08-11  **段階1：PC・タブレットへ同期**（橋本の指示）
+
+   狙い
+     「情報を装飾するデザイン」から「情報そのものを強く見せるデザイン」へ。
+     器（カード）を外し、罫線・余白・級数で情報を直接編集する。
+     訪問者は「何者なのこいつ」という懐疑から読み始めるので、
+     サイトの役割は売り込みではなく **編集された証拠資料**。
+
+   ★ 段階1でやったこと＝**全幅への昇格だけ**。
+     375pxで確定した指定をベースへ上げ、メディアクエリに残したのは
+     **幅そのものに由来するもの（余白の詰め）だけ**。
+     見た目の設計（ghostの拡大・全幅の罫線・写真のブリード）は段階2で、
+     1440pxの実物を見てから別途決める。**ここでは大きさを設計し直していない。**
+
+   ★ なぜ !important が並ぶのか
+     デザインの原稿は見た目をすべて **インラインの style** で持っている。
+     インラインはセレクタより強いので、!important でないと上書きできない。
+     これは行儀の悪さではなく、この原稿の構造から来る必然。
+   ══════════════════════════════════════════════════════════════ */
+
+
+/* ── ①〜④（2026-08-10 の装飾改修）は 2026-08-12 に停止 ──────────
+   見直しの結果、装飾を戻した。build_impl.py の APPLY_DECOR_STRIP を
+   True にすると復活する。経緯は同ファイルの該当コメントに記載。
+
+   ★ バッジだけはCSSでは戻らない。**原稿に要素そのものが足されている**ため
+     （data-award-badge ほか。2026-08-10 に追加）。CSSを外すと、素のSVGが
+     黒い丸として出てしまう。原稿からは消さず、ここで表示だけ止める。
+     復活させるときは APPLY_DECOR_STRIP を True にすれば、この行ごと入れ替わる。 */
+[data-award-badge]{ display:none !important; }
+
+/* ── ⑤ 表彰の数字（応募数・受賞数の 2 つ）を横に並べる ── */
+[data-award-nums]{
+  display:flex !important; flex-wrap:wrap !important;
+  align-items:baseline !important; column-gap:26px !important; row-gap:10px !important;
+}
+
+/* ── ⑥ CLIENTS の余白 ───────────────────────────
+   ロゴそのもの（色・大きさ）は触らない。**加工禁止**の指示どおり。 */
+[data-client-logos]{ gap:14px !important; }
+
+/* ── ⑦ 広い画面での調整（段階2・2026-08-11 指示／**≥1024px のみ**） ────
+   ★ 段階1は「375pxで決めたものを全幅へ同期」しただけで、大きさは設計していない。
+     1440pxの実物を見て、広い画面で小さすぎるもの・空きすぎる箇所だけを直す。
+   ★ **767px以下には一切影響しない。**境界を 1024px にしているのは、
+     タブレット縦（768〜1023）は狭くて拡大の余地が無いため。 */
+@media (min-width: 1024px){
+
+  /* ⑦-1 表彰バッジを大きく。SVGは viewBox のまま、外側の寸法だけ変える
+     （中の座標系は 0 0 120 120 のままなので、線の太さも文字も比率どおりに拡大する） */
+  [data-award-badge]{ width:148px; height:148px; }
+
+  /* ⑦-2 表彰名を大きく。バッジとの縦中心揃えは [data-award-head] の
+     align-items:center が担っているので、級数を変えても揃いは崩れない */
+  [data-award-kicker]{ font-size:14px; }
+  [data-award-title] { font-size:24px; }
+
+  /* ⑦-3 AWARD の列比。左（バッジ＋表彰名＋説明文）を広げて
+     説明文の行長を伸ばし、右に残る空きを詰める。
+     ※ 原稿は auto-fit の 1:1。ここで明示して比率を決める */
+  [data-card="award"]{ grid-template-columns:1.15fr 1fr !important; }
+
+  /* ⑦-4 02 の列比を約 4:6（SCHEDULE : 手順のリスト）
+     ★ ちょうど 4:6 だと、左の説明文の最後の2文字だけが次行に落ちた。
+       **2文字の取り残しは、行長そのものより先に目につく。**
+       プロセス本文が1行35〜40字に収まる範囲で、左を少しだけ広げて解消する。 */
+  [data-card="participants"]{ grid-template-columns:4.4fr 5.6fr !important; }
+
+  /* ⑦-5 CLIENTS の箱の高さ。ロゴの実寸は36〜38pxなのに箱が84pxあり、
+     ロゴの下に空きが残って「セクションの終わりが間延びして」見えていた。
+     ロゴそのもの（色・大きさ）は触らない＝**加工禁止**の指示どおり */
+  [data-client-logos] > div{ height:64px !important; }
+}
+
+/* ── ⑧ FV の文法適用（ブロック3・2026-08-11 指示） ─────────────
+   ★ 枠のある箱（チップ・TELボックス）は「LPの部品」に見える。
+     01以降で確立した語彙＝**罫線・余白・ドット＋テキスト**に揃える。
+   ★ 触るのは器だけ。**写真・コピー・CTAボタンは触らない**（CTAは色面を使う確定ルール）。 */
+
+/* TEL：箱をやめてテキストにしたぶん、下に細線を1本だけ引いて位置を決める。
+   囲まないので「もう一つのボタン」には見えず、CTAとの主従が保てる。 */
+[data-fv-tel]{
+  border-bottom:1px solid var(--color-border);
+  padding-bottom:2px;
+  align-self:center;
+}
+[data-fv-tel]:hover{ border-bottom-color:var(--color-accent); }
+
+/* タグ：シアンのドット＋テキスト。01以降のセクションラベルと同じ語彙。
+   区切りは余白だけで作る（「・」も枠も足さない） */
+[data-hero-tags]{ gap:14px 26px !important; margin-top:clamp(12px,2.4vh,24px) !important; }
+@media (max-width: 767px){
+  /* 狭い画面では横に3つ並ばない。行間を少し詰めて2行に収める */
+  [data-hero-tags]{ gap:10px 20px !important; }
+}
+
+/* ── ⑨ フッター（ブロック4・改訂版 2026-08-11） ────────────
+   ★ 巨大英字は**静止**。マーキーにしない。動く英字は帯写真の2本で完結させる。
+   ★ 右端で断ち切れてよい。**断ち切りはフッター限定の署名**（他へ流用しない）。 */
+/* ★ フッターの面を CONTACT からつなげる（2026-08-11）。
+   CONTACT下端の実測は rgb(5,110,157)〜(39,147,179) のティール寄り。
+   従来の #004052（rgb 0,64,82）は暗く紺寄りで、**別パーツに見えて色が飛んでいた**。
+   → そこから一段落とした濃度の #06607A（rgb 6,96,122）へ。確定パレットのティール範囲内。
+   白のコントラスト比 7.1:1／白90%でも 5.9:1（基準4.5:1）。 */
+[data-footer]{ background:#06607A !important; }
+
+[data-footer-band]{ overflow:hidden; }
+[data-footer-type]{ white-space:nowrap; }
+
+/* ロゴの競り上がり（初版の演出を流用・2026-08-11 追補）
+   ★ **一度きり。ループしない。**器（overflow:hidden）の下から立ち上がって、そこで止まる。
+     出現アニメーションは可、ループする動きは既存マーキー2本で完結、というのが文法。
+   ★ 仕掛け：出現の共通処理（main.js が [data-reveal] に lpFade を当てる）に相乗りし、
+     **アニメーション名だけ CSS 側で lpRise に差し替える。**
+     JSはインラインで animation を書き込むので、上書きには !important が要る。
+     lpRise は不透明度を触らないので、JSが0にした opacity も戻してやる
+     （器で隠れているため、先に不透明にしても外からは見えない）。 */
+/* ★ 監視するのは**器**（クリップしている親）。中身を監視してはいけない。
+     IntersectionObserver は**祖先の overflow:hidden によるクリップも計算に入れる**ので、
+     器の外へ隠した要素は「交差していない」と判定され続け、
+     **隠れているから出てこられない**堂々巡りになる（2026-08-11 に実測）。
+   ★ 初期位置も発火後もここ（CSS）に置く。**JSはクラスを付けるだけ。**
+     指定が2か所に散ると、次に触る人がどちらを直せばよいか分からなくなる。 */
+
+/* ★ 2文目は**改行して2行に組む**（768px以上）。
+   1行に続けると、1文目だけで画面幅を超えて2文目が画面に出てこない。
+   「≤767pxでは1文目のみ」という指定がある以上、**≥768では2文とも見える**のが筋。
+   各行は右端で断ち切れてよい。 */
+@media (min-width: 768px){
+  [data-footer-type2]{ display:block; }
+}
+
+/* カラムの区切りは細線1本ずつ。左端・右端には引かない */
+@media (min-width: 768px){
+  [data-footer-col]{ border-left:1px solid rgba(255,255,255,.25); }
+  /* ★ 3カラムを等分に切る。auto-fit のままだと最後の列の中身が短く、
+     右端に**大きな空きが残って収まりが悪い**（1440pxで約190px空いていた）。
+     ナビは右端に寄せて、インナーの左右**両端を留める**。 */
+  [data-footer-cols]{ grid-template-columns:1.15fr 1fr 1fr !important; }
+  [data-footer-nav]{ align-items:flex-end; text-align:right; }
+}
+@media (max-width: 767px){
+  /* 縦積みになるので、縦線は意味を成さない。横線に置き換える */
+  [data-footer-col]{
+    border-left:none !important;
+    border-top:1px solid var(--color-border);
+    padding:22px 0 0 !important;
+    margin-top:22px;
+  }
+  /* 2文目は落とす。1文目だけを断ち切りで見せる */
+  [data-footer-type2]{ display:none; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ワイド画面パス（≥1440px・2026-08-11 指示）
+
+   ★ **1439px以下には一切影響しない。**すべてこの1つのメディアクエリの中にある。
+     判定は1920pxで行う（社内の標準環境）。
+   ★ 器（max-width:1280px）は変えない。**中身の級数と写真の面積だけを上げる。**
+     本文は 40em のまま拡大しない（行長が伸びると読みにくくなる）。
+   ★ HTMLは変えない。並びは grid / order だけで作る。
+   ══════════════════════════════════════════════════════════════ */
+@media (min-width: 1440px){
+
+  /* ── ① タイポスケール：頭打ちの clamp をやめて vw で伸ばす ─────── */
+  [data-h2]{ font-size:clamp(48px,3.4vw,72px) !important; }
+  /* ★ 02 は見出しの横に写真が来るので、列が狭い。他と同じ級数まで上げると
+     見出しの最後の**1語だけが次の行に取り残される**。
+     写真を大きくする指示を優先し、**この節だけ級数を抑える**（48〜54px＝指示の範囲内）。 */
+  #community [data-h2]{ font-size:clamp(44px,2.6vw,54px) !important; }
+  [data-ghost]{ font-size:13vw !important; }
+  [data-bignum]{ font-size:clamp(120px,9.5vw,190px) !important; }
+  [data-bignum="metric"]{ font-size:clamp(92px,6.4vw,128px) !important; }
+
+  /* ── ② 写真の格上げ ─────────────────────────────
+     ★ 器の右端（中心＋640px）から画面の右端（中心＋50vw）までの差だけ、
+       負のマージンで外へ出す。**画面幅が広がるほど写真だけが伸びる。**
+       これが「中身の幅の頭打ちを写真だけが突き破る」の実装。 */
+  /* ★ 02 登壇写真のブリードは取り消し（2026-08-11）。
+     ワイドパスの指示②で「インナー半分以上＋右端ブリード」にしたが、
+     **改修前と同じ「インナー内に収まる通常配置・四隅とも小角丸」が正**との判断。
+     `flex:0 1 440px`（原稿の指定）に戻る。 */
+  /* ★ 印は付けない。**ビルドが写真を差し込むときに付ける class を使う**
+     （原稿に属性を足すと、写真を探している文字列一致が外れて空枠のまま出る。
+       2026-08-11 に実際そうなった）。 */
+  .sec-photo{ height:clamp(400px,32vw,620px) !important; }
+  .sec-photo--right{ margin-right:calc(640px - 50vw) !important; }
+  .sec-photo--left { margin-left :calc(640px - 50vw) !important; }
+
+  /* ── ③ 左右交互のリズムを強調 ────────────────────────
+     写真のある列を広く、文字の列を狭くする。向きは1つおきに入れ替える。
+     **HTMLの順番は変えず、grid の列幅だけで作る。** */
+  #community [data-card="participants"]{ grid-template-columns:4fr 6fr !important; }
+  #service > div > div:nth-of-type(odd) { grid-template-columns:1fr 1.25fr !important; }
+  #service > div > div:nth-of-type(even){ grid-template-columns:1.25fr 1fr !important; }
+}
+
+/* ★ ブリードする写真は、**画面端に接する側の角丸を外す**（2026-08-11 指示）。
+   端に接しているのに角が丸いと、画面の中に浮いた器に見える。
+   内側の角だけ 02 と同値の小さな角丸を残す。
+   ※ これは判断B「非対称角丸は廃止」を**ブリードする写真に限って覆すもの**。
+     ★★ **帯写真マーキー2本には適用しない**（2026-08-11 訂正）。
+        帯写真は「角丸＋インナー幅の器＋スクロール連動のズーム」が元からの正しい仕様。
+        一度「左右いっぱい・角丸0」に変えたが誤りだったので切り戻した。
+        この文法が当てはまるのは **SERVICE写真の片側ブリードだけ**。 */
+.sec-photo--right{ border-radius:clamp(16px,3vw,40px) 0 0 clamp(16px,3vw,40px) !important; }
+.sec-photo--left { border-radius:0 clamp(16px,3vw,40px) clamp(16px,3vw,40px) 0 !important; }
+
+/* ★ PROFILE の「面の円」＝写真の受け皿（円の語彙の第2項・B案で残すと確定）。
+   写真が縦380px→**横520px**に変わった時点（2026-08-09）から、
+   PC幅では**円330pxが写真の内側に完全に収まり、前面の写真（z-index:1）に隠れて見えなくなっていた。**
+   実測：円 x173〜503 / y7924〜8254、写真 x124〜644 / y7878〜8268（1440px）。
+   → 写真の**左下からはみ出して接地する**位置へずらす。浮遊させない（写真に必ず重なりを残す）。
+   ※ SP（〜767px）は写真が細く、いまの指定で既に見えているので触らない。 */
+@media (min-width: 768px){
+  #profile [data-deco-circle]{
+    /* 径は写真の高さ390pxの約64%。330pxのままだと写真より下へ大きく張り出し、
+       受け皿ではなく**独立した円**に見えていた。 */
+    width:250px !important;
+    /* はみ出しは写真の左辺・下辺から**それぞれ径の約1/4（62px）**まで。
+       静的位置は親608pxの中央＝x259。写真の左辺は124なので 124-62=62 へ寄せる（-197px＝-78.8%）。
+       縦は写真の下辺8268に対し 8268+62=8330 へ（+202px＝+80.8%）。
+       重なりは 188×188px 残るので**接地**する（浮遊させない）。 */
+    transform:translate(-78.8%, 80.8%) !important;
+  }
+}
+
+/* ── ⑩ 幅そのものに由来する調整（375px側だけ） ─────────────
+   ★ ここに残してよいのは「狭いから詰める」類だけ。
+     設計（何を大きく見せるか）はベース側にある。 */
+@media (max-width: 767px){
+  /* カードの器を外すと、2つの列のあいだが空きすぎる。狭い画面でだけ詰める */
+  [data-card="award"],
+  [data-card="participants"]{ gap:34px !important; }
+}
+
+/* ── FVの3枚（引きながら入れ替わる） ───────────────── */
+.fv-stack{ overflow:hidden; }
+.fv-slide{
+  display:block; position:absolute; inset:0;
+  background-repeat:no-repeat;
+  opacity:0;
+  /* ★ will-change は transform だけにする（2026-08-07）。
+     opacity まで挙げると、3枚ぶんの層をずっと確保し続けることになり、
+     ブラウザが層を作るのをあきらめて**毎フレーム描き直し＝カクつき**になる。
+     不透明度の変更はもともと安い。挙げる必要が無い。 */
+  will-change:transform; backface-visibility:hidden;
+  /* 引きの中心。人物が右寄りなので、真ん中を中心にすると顔が枠外へ逃げる */
+  transform-origin:62% 42%;
+}
+/* ★ 1枚目だけ最初から出しておく。JSが動き出す前の一瞬の白抜けを防ぐ */
+.fv-slide[data-fv="1"]{ opacity:1; }
+.fv-slide[data-fv="1"]{ background-image:url("../img/fv-01.webp"); background-size:cover; background-position:84% 26%; }
+.fv-slide[data-fv="2"]{ background-image:url("../img/fv-02.webp"); background-size:cover; background-position:78% 30%; }
+.fv-slide[data-fv="3"]{ background-image:url("../img/fv-03.webp"); background-size:cover; background-position:50% 30%; }
+
+@media (max-width: 767px){
+  /* スマホは縦長の画面なので、横長の写真を縦に切り出した版に差し替える。
+     切り出した時点で人物が中央に来ているので、ここは cover で足りる */
+  .fv-slide[data-fv="1"]{ background-image:url("../img/fv-01-sp.webp") !important; background-size:cover !important; background-position:50% 32% !important; }
+  .fv-slide[data-fv="2"]{ background-image:url("../img/fv-02-sp.webp") !important; background-size:cover !important; background-position:50% 32% !important; }
+  .fv-slide[data-fv="3"]{ background-image:url("../img/fv-03-sp.webp") !important; background-size:cover !important; background-position:50% 32% !important; }
+}
+
+/* ── 見出しと説明のあいだ（2026-08-07 指示） ─────────────
+   ★ 文字を1字ずつのタグに割ると、1字ずつが inline-block になる。
+     inline-block はベースラインの下に**下ヅラぶんの空きを抱える**ので、
+     見出しの箱が数十px背が高くなり、そのぶん下の説明文へ寄っていた。
+     箱の高さは元に戻せないので、下に余白を足して間を作り直す。
+   ★ h1 に style="margin:0" が直接書いてあるため !important が要る。
+   ★ スマホは足さない。見出しを画面の下端に置く組みなので、
+     ここで空けると1画面目からはみ出す。 */
+[data-hero-title]{ margin-bottom: clamp(10px, 1.6vw, 26px) !important; }
+@media (max-width: 767px){
+  [data-hero-title]{ margin-bottom: 0 !important; }
+}
+
+/* ── 右端の縦帯（BE FOUND / 2026）について（2026-08-07 の記録） ─────
+   ★ 結論：**原稿のまま（角丸の白いカード＋ぼかし）が正。**ここでは何も上書きしない。
+
+   経緯（同じ回り道をしないために残す）
+     ① 「白い面が被って見える」ため面を外した
+     ② 1枚目（背後が明るい窓）だけを見て「面が無くても読める」と判断した。**誤り。**
+        FVは3枚あり、2枚目は濃紺のスーツ、3枚目は人物の髪が背後に来て、
+        濃い文字が飲まれて**ほぼ見えなくなった**
+     ③ カードに見せない案（角丸をやめ、上下を透明へ溶かす霞）に置き換えた。読めるようになった
+     ④ しかし「**前のカードタイプのほうが雰囲気に合っている**」との判断で①の前に戻した
+
+   持ち帰るべきこと
+     ・**3枚を入れ替える以上、どの写真でも成立するかで判断する。**
+       「いま出ている写真では読めた」で決めない
+     ・白い面は飾りではなく、**読ませるための土台**として最初から置かれていた */
+
+/* ── FVの写真の左側のマスク（2026-08-07 指示） ─────────────
+   原稿は linear-gradient(100deg, transparent 0%, .25→16%, .7→34%, #000 52%)。
+   **写真の幅の半分以上を使って斜めに溶かしていた。**
+
+   1枚目は左半分が白飛びしているので境目が見えなかったが、
+   2・3枚目は左まで写真の中身があるため、**斜めの帯がはっきり出る。**
+   → 「左半分に何かマスクが掛かって見える」の正体はこれ。
+
+   ★ 私はこれを1枚目だけを見て「マスクは効いていない」と判断した。**誤り。**
+     FVが3枚ある以上、判定は必ず3枚まとめて行う。
+
+   ★★ 2026-08-07（3回目）。ここは3段階で動いている。
+       ① 原稿      100deg・52%まで  … 斜めの帯として見えてしまう（長すぎ）
+       ② 1回目の修正 90deg・11%まで   … 帯は消えたが、**真横で短いので切り口が立った。**
+                                      「中央でパッツリ切れている」と見える
+       ③ いま      96deg・34%まで   … わずかに右上がりへ傾け、溶かす幅を3倍に
+
+     ★ 角度の意味：90deg は真横。**90より大きくすると、境目が右上がりに傾く。**
+       96deg でおよそ6度。斜めだと分かるほどではなく、
+       「まっすぐ切られていない」ことだけが伝わる量。
+     ★ 途中の刻みを増やしてある（8/18/26/34%）。2〜3点だと、
+       濃さの変わり方が直線的になって**帯の輪郭が見えてしまう。**
+       点を増やすと変化がなめらかになり、どこが境目か分からなくなる。
+     ★ 34% ＝ 約350px。見出しと本文はこの帯の上に乗るので、読みやすさも保てる。 */
+section#top > div:first-of-type{
+  -webkit-mask-image: linear-gradient(96deg,
+    transparent 0%, rgba(0,0,0,.06) 8%, rgba(0,0,0,.30) 18%,
+    rgba(0,0,0,.66) 26%, #000 34%) !important;
+          mask-image: linear-gradient(96deg,
+    transparent 0%, rgba(0,0,0,.06) 8%, rgba(0,0,0,.30) 18%,
+    rgba(0,0,0,.66) 26%, #000 34%) !important;
+}
+
+/* ── FVの上に敷かれている白い膜（.hero-panel）を必要な範囲まで縮める ─────
+   2026-08-07。「左側に何かマスクが掛かっている」の**本当の正体はこれ**だった。
+
+   原稿の指定（design.css 側・原稿から取り込んだもの）
+     linear-gradient(100deg,
+       rgba(255,255,255,.97)  0%,    ← ほぼ不透明な白
+       rgba(242,250,252,.93) 26%,
+       rgba(223,243,249,.72) 48%,
+       rgba(0,192,235,.1)    74%,
+       transparent           90%)
+   これが **画面の全幅（1440px）** に敷かれていた。透明になるのは 90%＝1296px。
+   写真は 403px から始まるので、**写真のほぼ全域が白い膜の下**にいた。
+
+   ★ 私は「左側のマスク」を疑って写真の枠のマスクを2回直したが、そちらは無実だった。
+     計算後のスタイルを実際に読み出して、初めてこの層に行き着いた。
+     **見えているものから犯人を推測せず、計算後の値を読むこと。**
+
+   膜の役目は「写真の上に乗る文字を読ませる」こと。役目自体は要る。
+   ただし文字は **x=612px までしか無い**（本文の右端）。1296px まで掛ける必要は無い。
+   → 透明になる位置を 90% → 54%（約780px）へ。文字の右端に十分な余裕を残しつつ、
+     写真の大半は膜の外に出る。左端の不透明度も .97 → .92 に少し下げる。
+
+   ★ スマホは別物なので触らない。あちらは白ではなく「写真の下を暗く沈める」影で、
+     全画面の写真の上に白い見出しを読ませるために要る。 */
+@media (min-width: 768px){
+  .hero-panel{
+    background: linear-gradient(96deg,
+      rgba(255,255,255,.92)  0%,
+      rgba(255,255,255,.88) 26%,
+      rgba(242,250,252,.55) 38%,
+      rgba(242,250,252,.18) 46%,
+      rgba(242,250,252,0)   54%) !important;
+  }
+}
+
+/* ── プロフィール写真の左上に刺す多角形（2026-08-07 指示） ─────────────────
+   ★ 写真の**後ろ**に置く。上に重ねない。
+     ファーストビューで多角形を人物の上に乗せたとき、
+     「白い何かが被っている」としか見えなかった。人の上に色を置かない、は同じ。
+     後ろから左上へはみ出させると、**写真に刺さっているように見えて顔は汚さない。**
+   ★ 色は既にある円（rgba(8,145,178,.1)）と同じ系統で、少しだけ濃く。
+     2つが同系色だと「同じ仕掛けの一部」に見え、色数が増えたようには見えない。
+   ★ 面積比の決まり（色面15%以下）に収まる大きさに留める。
+   ★ 2026-08-09、写真が 380px の縦 → 520px の横になり、列の幅をほぼ埋めるようになった。
+     以前の 54%×44% だと**写真の左外に大きくはみ出して、宙に浮いた三角**に見えた（実測）。
+     写真に「刺さっている」ように見せるには、**はみ出しより重なりが多い**必要がある。
+     → 30%×36% に縮め、はみ出しは約30pxまでに留める。 */
+[data-profile-frame]{ position:relative; }
+[data-profile-frame]::before{
+  content:""; position:absolute; z-index:0; pointer-events:none;
+  left:-3%; top:-8%; width:30%; height:36%;
+  background:linear-gradient(140deg,
+    rgba(0,192,235,.26) 0%,
+    rgba(8,145,178,.12) 100%);
+  clip-path:polygon(0% 22%, 58% 0%, 100% 40%, 40% 100%);
+}
+/* 写真そのものを前に出す。これが無いと多角形が写真の上に乗る */
+[data-profile-frame] > div:last-child{ z-index:1; }
+
+/* ★ 2026-08-11、**全幅で多角形を消す**（段階1・橋本の指示）。
+     以前（08-07追加・08-09調整）は「写真に刺さっているように見せる」ために置いていたが、
+     今回の改修方針は **器も装飾も外して情報を直接見せる** ので、逆向きになった。
+     このサイトは「親しみの担当は写真。色ではない」が設計思想なので、
+     写真の角で色面が主張すると役割の取り合いになる。
+     ※ PROFILEの「面の円」は全幅で残す（B案・語彙整理済み）。消すのは多角形だけ。 */
+[data-profile-frame]::before{ display:none !important; }
+
+/* ── 取引先ロゴの並び（2026-08-07「寂しい」への対応） ─────────────
+   ★ 区切りの縦線。ロゴとロゴのあいだにだけ入れる（両端には入れない）。
+     線が1本あるだけで「3つが並んでいる」ことが構造として読め、
+     隙間が「間延び」ではなく「区切り」に変わる。
+   ★ 面は足さない。カードをやめた判断と矛盾するため、細い線1本まで。 */
+[data-client-logos] > div{ position:relative; }
+/* ★ 区切りの縦線は「列の境目」に置く。grid の gap は 16px なので、その半分だけ左へ。
+     ロゴの真横ではなく境目に立てることで、列があることが伝わる。 */
+[data-client-logos] > div + div::before{
+  content:""; position:absolute; left:-8px;
+  top:50%; transform:translateY(-50%);
+  width:1px; height:38px; background:var(--color-border);
+}
+/* ★ 押せることが分かる程度の反応だけ。動かさない・光らせない。
+     取引先のロゴなので、こちらの都合で色や形を変えない。
+     変えてよいのは「そこにあるかどうか」＝不透明度だけ。 */
+[data-client-link]{
+  display:inline-block;
+  transition: opacity .25s ease;
+}
+[data-client-link]:hover{ opacity:.55; }
+/* キーボードで辿る人のために、どこにいるかを示す */
+[data-client-link]:focus-visible{
+  outline:2px solid var(--color-accent);
+  outline-offset:6px;
+  border-radius:2px;
+}
+@media (max-width: 767px){
+  /* スマホは縦に積むので、縦線は意味を成さない。横線に置き換えず、消すだけ */
+  [data-client-logos] > div + div::before{ display:none; }
+}
+
+/* ── 見出しを行ごとに出すための窓（2026-08-07 追加・演出①） ─────
+   ★ 行を下からせり上げるには、**行の外側に窓（overflow:hidden）が要る。**
+     窓が無いと、上げる前の行が見えたまま動くので「せり上がった」に見えない。
+   ★ padding/margin の打ち消しは、日本語の「年」「。」の下ヅラが窓に切られるのを防ぐため。
+     これを入れないと、止まったあとも文字の下が欠けて見える。 */
+.line-mask{
+  display:block; overflow:hidden;
+  padding-bottom:.10em; margin-bottom:-.10em;
+}
+.line-mask > .line{ display:block; }
+
+/* ── 慣性スクロール（Lenis）に必要な最低限の指定 ─────────────
+   ★ 高さを auto に戻さないと、Lenis が「ページの長さ」を測れず途中で止まる。
+   ★ scroll-behavior:smooth が残っていると、ブラウザ標準の滑らかスクロールと
+     Lenis が同時に動いて、引っかかるような止まり方をする。片方に寄せる。 */
+html.lenis, html.lenis body{ height:auto; }
+.lenis.lenis-smooth{ scroll-behavior:auto !important; }
+.lenis.lenis-stopped{ overflow:hidden; }
+
+/* ── 多角形（写真の上をゆっくり漂う面） ─────────────────
+   ★ 形・色・濃さは画面幅によらず同じ。置き場所だけを画面幅ごとに変える。
+     浮遊は GSAP が動かすので、ここに animation は書かない。 */
+.hero-poly__shape{
+  display:block; width:100%; height:100%;
+  background:linear-gradient(138deg, var(--brand-vivid), var(--brand-deep));
+  clip-path:polygon(0% 36%, 44% 0%, 100% 22%, 66% 100%, 10% 84%);
+  opacity:.28;
+  will-change:transform;
+}
+
+@media (min-width: 768px){
+  /* PCの置き場所（2026-08-07 指示で追加）。
+     ★ 人物の顔にかからないこと。色を人の上に乗せると、
+       写真に持たせた役目（親しみ）を色が殺す。
+     写真は右側の枠に敷かれ、左端に向かってマスクで消えていく。
+       → その**消えかけの帯**（本文の右・人物の左下）に置く。
+         写真の上でも人の上ではなく、白地の上でもない、ちょうど間の場所。 */
+  /* ★ PCの多角形は取り下げ（2026-08-07）。
+       「SPと同じ多角形をPCにも」という指示で一度入れたが、実物を見て**不要**と判断。
+       写真の上に薄い面が乗ると、**白飛びした写真の上では「白い何かが被っている」**
+       ようにしか見えず、奥行きではなく汚れとして読まれる。
+       スマホは写真を画面いっぱいに敷いていて濃い部分が多く、事情が違うので残す。
+       戻すときは display を消して、下の位置指定を復活させるだけでよい。
+         位置の実測値：left:37% / top:50% / width:23% / height:38% / opacity:.20 */
+  .hero-poly{ display:none; }
+}
+/* 日本語を文節で折り返す（語の途中で折れないように。インラインで個別に指定した要素はそちらが優先） */
+body{ word-break:auto-phrase; }

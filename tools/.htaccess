@@ -1,0 +1,2 @@
+# 公開サーバーでは、このフォルダを外から読めないようにする（Apache 用）
+Require all denied

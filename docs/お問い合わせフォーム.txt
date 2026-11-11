@@ -1,0 +1,42 @@
+Contact Form 7 に貼るもの
+==========================================================
+
+★ フォームの題名は必ず「ソラマド お問い合わせ」にする。
+  テーマは id ではなく題名でフォームを呼んでいる（サイトごとに id の採番が変わるため）。
+  題名が 1 文字でも違うと、フォームが出ずに空欄になる。
+
+────────────────────────────────
+【フォーム】タブに貼る
+────────────────────────────────
+<label style="display:flex;flex-direction:column;gap:7px"><span style="font:400 13px/1 'Noto Sans JP',sans-serif;color:#FFFFFF">店舗名</span>[text* office]</label>
+<label style="display:flex;flex-direction:column;gap:7px"><span style="font:400 13px/1 'Noto Sans JP',sans-serif;color:#FFFFFF">お名前</span>[text* fullname]</label>
+<label style="display:flex;flex-direction:column;gap:7px"><span style="font:400 13px/1 'Noto Sans JP',sans-serif;color:#FFFFFF">メールアドレス</span>[email* email]</label>
+<label style="display:flex;flex-direction:column;gap:7px"><span style="font:400 13px/1 'Noto Sans JP',sans-serif;color:#FFFFFF">ご相談内容</span>[textarea* message rows:4]</label>
+[submit "送信する"]
+
+────────────────────────────────
+【メール】タブに入れる
+────────────────────────────────
+題名        : [サイトからのお問い合わせ] [office]
+送信元      : ソラマド <wordpress@（サイトのドメイン）>
+送信先      : （受け取るメールアドレス）
+追加ヘッダー: Reply-To: [email]
+
+メッセージ本文:
+店舗名：[office]
+お名前：[fullname]
+メール：[email]
+
+ご相談内容：
+[message]
+
+--
+このメールはソラマドのサイトのお問い合わせフォームから送信されました。
+
+────────────────────────────────
+確かめること
+────────────────────────────────
+・「送信元」のドメインは、サイトと同じドメインにする。別のドメイン（gmail など）にすると、迷惑メール扱いで届かないことがある
+・送信テストを 1 回して、実際に受信箱へ届くまで見る。画面に「ありがとうございます」と出ても、届いていないことがある
+・送信後に送信完了ページへ移すなら、CF7 の「追加設定」ではなく、送信完了の固定ページへのリダイレクトを JavaScript で足す（このテーマには入れていない）
+・公開するなら迷惑メール対策を入れる。CF7 の「インテグレーション」から reCAPTCHA v3 をつなぐか、Akismet などのプラグインを使う

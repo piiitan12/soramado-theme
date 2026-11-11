@@ -1,0 +1,41 @@
+/* Contact Form 7 の見た目を、静的HTMLのモックアップに合わせる。
+   ★ このファイルは手書き。build_theme.py は触らないので消えない。
+     CF7 のタグ（[text*] など）には任意の style 属性を書けないので、
+     モックアップで各 input に直接入れていた値を、ここでCSSとして当てている。 */
+
+.wpcf7 { margin: 0; }
+.wpcf7 form.wpcf7-form { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.wpcf7 .wpcf7-form-control-wrap { display: block; }
+
+.wpcf7 input[type="text"],
+.wpcf7 input[type="email"] {
+  width: 100%; height: 50px;
+  border: 1px solid rgba(255,255,255,.28); border-radius: 8px;
+  background: #fff; color: var(--color-heading);
+  padding: 0 14px; font: 400 15px/1 'Noto Sans JP', sans-serif;
+}
+.wpcf7 textarea {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.28); border-radius: 8px;
+  background: #fff; color: var(--color-heading);
+  padding: 12px 14px; font: 400 15px/1.7 'Noto Sans JP', sans-serif;
+  resize: vertical;
+}
+.wpcf7 input::placeholder, .wpcf7 textarea::placeholder { color: #9AAAB0; }
+
+.wpcf7 input[type="submit"] {
+  align-self: flex-start; min-height: 54px; padding: 0 38px;
+  border: none; border-radius: 4px;
+  background: #fff; color: var(--color-heading);
+  font: 500 15px/1 'Noto Sans JP', sans-serif; cursor: pointer;
+}
+.wpcf7 input[type="submit"]:hover { opacity: .86; }
+
+/* 入力エラーと送信後のメッセージ。濃い面の上なので、既定の黒文字だと読めない */
+.wpcf7 .wpcf7-not-valid-tip { color: #FFD4CC; font: 400 12.5px/1.7 'Noto Sans JP', sans-serif; margin-top: 5px; }
+.wpcf7 .wpcf7-response-output {
+  margin: 6px 0 0; padding: 12px 16px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.35); color: #fff;
+  font: 400 13.5px/1.8 'Noto Sans JP', sans-serif;
+}
+.wpcf7 .wpcf7-spinner { background-color: rgba(255,255,255,.5); }

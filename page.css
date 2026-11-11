@@ -1,0 +1,77 @@
+/* LP 以外のページ（プライバシーポリシー・送信完了・404）の見た目。手書き。
+   色と書体は design.css の変数（--color-* / --font-*）をそのまま使う。 */
+
+.page {
+  background: var(--color-bg);
+  /* ヘッダーは position:fixed なので、その下から始める */
+  padding: calc(clamp(64px, 8vw, 88px) + 64px) 20px 120px;
+}
+.page__inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.page--center .page__inner {
+  text-align: center;
+}
+.page__en {
+  margin: 0 0 12px;
+  font: 600 13px/1 var(--font-en);
+  letter-spacing: 0.2em;
+  color: var(--color-accent);
+}
+.page__title {
+  margin: 0 0 48px;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-heading);
+}
+.page__title a {
+  color: inherit;
+}
+.page__body {
+  font-size: 15px;
+  line-height: 2;
+  color: var(--color-text);
+  word-break: auto-phrase;
+}
+.page__body > * + * {
+  margin-top: 1.2em;
+}
+.page__body h2 {
+  margin-top: 2.4em;
+  padding-bottom: 8px;
+  font-size: 18px;
+  line-height: 1.6;
+  border-bottom: 1px solid var(--color-border);
+}
+.page__body ol,
+.page__body ul {
+  padding-left: 1.5em;
+}
+.page__body a {
+  color: var(--color-cta-bg);
+  text-decoration: underline;
+}
+.page__article + .page__article {
+  margin-top: 80px;
+}
+.page__back {
+  margin-top: 56px;
+}
+.page__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  padding: 0 34px;
+  border-radius: 4px;
+  background: var(--color-cta-bg);
+  color: var(--color-cta-text);
+  font: 500 15px/1 var(--font-jp);
+  transition: background 0.3s;
+}
+.page__button:hover {
+  background: var(--color-cta-bg-hv);
+  color: var(--color-cta-text);
+}
